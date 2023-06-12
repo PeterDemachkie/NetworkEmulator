@@ -17,11 +17,9 @@ further in the "What I Want To Improve Section" of this readme.
 # Project Description:
 
 ```
-
     The purpose of the repository is to be able to model a small computer  
 network with functional packet switching emulation, MAC forwarding, ARP  
 requests, and other cool functions in a network.
-
 ```
 
 # Included Files:
@@ -52,7 +50,6 @@ Public functions used for commonly needed processes
 ### Included Functions:
 
 ```
-
 ip_to_bin(IP address): converts IP address to binary string
 
 subnet_route(IP Route Table, IP Address): finds longest matching route
@@ -60,7 +57,6 @@ subnet_route(IP Route Table, IP Address): finds longest matching route
 mac_gen(): generates random MAC address
 
 is_ipv4(IP Address): Returns True if the given string is in ipv4 format
-
 ```
 
 # What I Want To Improve:
@@ -68,7 +64,6 @@ is_ipv4(IP Address): Returns True if the given string is in ipv4 format
 ## Functionality and New Implementations:
 
 ```
-
     Primarily I want to finish implementing the functionality that I had  
 planned on having when I started making the project, however there are  
 other functions and devices that I want to implement such as VLANs, STP,  
@@ -77,13 +72,11 @@ model of a network.
 
     Additionally, I would like to add a feature where a user can save their  
 current network topology in a txt file or something and then reopen it.  
-
 ```
 
 ## Reworking Current Methods:
 
 ```
-
     One of the main things I want to address in terms of functionality is  
 how packets are sent and recieved by devices in the network. Currently,  
 a device that wants to send a packet or frame identifies the device it  
@@ -102,28 +95,23 @@ could all listen at the same time but I havent thought about it much further.
 of the functions outlined here should be methods in classes in the devices.py  
 file. Some of these are also just crude solutions to problems that shouldnt exist  
 if the issue at hand was dealt with properly.  
-
 ```
 
 ## User Interface:
 
 ```
-
     Related to the issues with the current classes and additional methods that  
 they should have. Right now, the userinterface employs some ways of doing something  
 that disregard program encapsulation, where instead of using a built in class method  
 it will directly read or write data from the classes attributes.
-
 ```
 
 ## Naming Conventions:
 
 ```
-
     For the most part, most class methods are in self.method_name() format, and  
 for easier readability and convenience, I want to change them to camel case  
 or self.methodName() and have variable names in snake case or  
 variable_name format.
-
 ```
 
