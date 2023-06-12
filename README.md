@@ -1,7 +1,7 @@
 # NetworkEmulator
-Peter Demachkie
-peterdemachkie101@gmail.com
-www.github.com/PeterDemachkie/NetworkEmulator
+Peter Demachkie  
+peterdemachkie101@gmail.com  
+www.github.com/PeterDemachkie/NetworkEmulator  
 
 
 # Disclosure:
