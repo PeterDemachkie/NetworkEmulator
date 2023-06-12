@@ -6,15 +6,13 @@ www.github.com/PeterDemachkie/NetworkEmulator
 
 # Disclosure:
 ```
-
-    Currently not complete or functional, but im going to try to create  
+Currently not complete or functional, but im going to try to create  
 documentation describing the supposed functionality of the completed  
 project. A lot of this has been changing as ive built it and learned  
 more. For that reason, many functions are not complete or not compatible  
 with other parts of the program. This includes thing like naming  
 conventions, data types, and new and old class methods. This is discussed  
 further in the "What I Want To Improve Section" of this readme.
-
 ```
 # Project Description:
 
