@@ -41,7 +41,7 @@ class Network:
     def get_networks(self):
         return self.networks.keys()
 
-    def get_available_addresses(self, network_address):
+    def get_available_address(self, network_address):
         network = ipaddress.IPv4Network(network_address, strict=False)
         all_addresses = [str(ip) for ip in network.hosts()]
         taken_addresses = []
@@ -51,7 +51,10 @@ class Network:
             if self.is_router(obj.get_name()):
                 taken_addresses.append(obj.get_ip_address(network_address))
         occupied_addresses = [address for address in all_addresses if address not in taken_addresses]
-        return occupied_addresses
+        if occupied_addresses != []:
+            return occupied_addresses.pop(0)
+        else:
+            return False
 
     def add_network(self, network_address, router_object):
         self.networks[network_address] = [router_object, None, 0]
@@ -72,13 +75,16 @@ class Network:
             switch_name = network[1].get_name()
             ret_str += "Gateway Router " + network[0].get_name() + " <-> Switch " + switch_name
             for device in network[2]:
+                if not self.is_switch(device):
+                    ret_str += "\nSwitch " + switch_name
                 if self.is_host(device.get_name()):
-                    ret_str += "\nSwitch " + switch_name + " <-> " + device.get_name() + " (" + device.get_ip_address() + ")"
+                    ret_str += " <-> Host " + device.get_name() + " (" + device.get_ip_address() + ")"
                 if self.is_router(device.get_name()) and device is not network[0]:
-                    ret_str += "\nSwitch " + switch_name + " <-> " + device.get_name() + " (" + device.get_ip_address(network_address) + ")"
+                    ret_str += " <-> Router " + device.get_name() + " (" + device.get_ip_address(network_address) + ")"
+        elif len(network[2]) > 1:
+            device = network[2].pop()
+            ret_str += "Gateway Router " + network[0].get_name() + " <-> Host " + device.get_name() + " (" + device.get_ip_address() + ")"
         return ret_str
-            # Again this is something I need network-device information for
-            # At least to do it cleanly and easily
 
     def send_packet(self, source, dest, packet_type, data=None):
         host_object = None
@@ -112,7 +118,7 @@ class Network:
         else:
             self.networks[network_address] = [router, None, [router]]
         self.routers[router] = name
-        ip_address = self.get_available_addresses(network_address).pop()
+        ip_address = self.get_available_address(network_address)
         router.add_network(ip_address, network_address)
 
         #THINGS TO DO WHEN ADDING A ROUTER TO THE NETWORK:
@@ -123,11 +129,14 @@ class Network:
         for router_object, name in self.routers.items():
             if name == router_name:
                 router = router_object 
-        if network_address in router.get_networks():
+        if network_address in self.get_networks():
             if self.networks[network_address][1] is not None:
                 router.add_route(network_address, self.networks[network_address][1])
             else:
                 router.add_route(network_address, self.networks[network_address][0])
+        else:
+            self.add_network(network_address, router)
+            router.add_network(self.get_available_address(network_address),)
         router.update_neighbors()
             
             #WORK ON
@@ -168,7 +177,7 @@ class Network:
         
     def new_host(self, name, network_address):
         host = Host(name, mac_gen(), self)
-        host.set_ip_address(self.get_available_addresses(network_address).pop(0))
+        host.set_ip_address(self.get_available_address(network_address))
         gateway = self.networks[network_address][0]
         host.set_gateway_router(gateway)
         if self.networks[network_address][1] is not None:

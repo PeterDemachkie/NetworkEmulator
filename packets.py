@@ -2,7 +2,6 @@
 # packets.py
 # www.github.com/PeterDemachkie/NetworkEmulator
 # peterdemachkie101@gmail.com
-import bridge
 class UDP:
     def __init__(self, src_ip, dest_ip, data = None):
         self.data = data
