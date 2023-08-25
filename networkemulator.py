@@ -1,5 +1,5 @@
 # Peter Demachkie
-# userinterface.py
+# networkemulator.py
 # www.github.com/PeterDemachkie/NetworkEmulator
 # peterdemachkie101@gmail.com
 
@@ -108,8 +108,8 @@ def edit_menu(network):
             if network_address == "!BACK":
                     return
             if network.is_network(network_address):
-                if network_address == "!BACK":
-                    return
+                print("Adding Router " + router_name + " To Existing Network " + network_address)
+            else:
                 print("Creating New Network " + network_address, " On Router " + router_name)
             network.new_router(router_name, network_address)
 
@@ -128,7 +128,12 @@ def edit_menu(network):
                         return
                     print("Network Full")
                     network_address = input("Enter A New Or Existing Network Address: ")
+                if network.is_network(network_address):
+                    print("Adding Router " + which_router + " To Existing Network " + network_address)
+                else:
+                    print("Creating New Network " + network_address, " On Router " + which_router)
                 network.add_router_network(which_router, network_address)
+
             else:
                 network_address = input("Enter The Network Address You Would Like To Remove: ")
                 while not network.is_network(network_address):
@@ -138,7 +143,8 @@ def edit_menu(network):
                     network_address = input("Enter The Network Address You Would Like To Remove: ")
                 confirm = input("Warning: Removing This Route Will Remove Any Connected Devices. \nContinue? [Y/N]: ")
                 if confirm == "Y":
-                    network.remove_router_network(router, network_address)
+                    print("Removing Network " + network_address) + "From Router " + which_router
+                    network.remove_router_network(which_router, network_address)
 
         elif option == "REMOVE":
             which_router = input("Enter The Name Of Router Would You Like To Remove: ")
@@ -150,6 +156,7 @@ def edit_menu(network):
             confirm = input("Warning: Removing This Router Will Remove Any Connected Devices. \nContinue? [Y/N]: ")
             if confirm == "Y":
                 network.remove_router(router)
+                print("Successfully Removed Router " + which_router)
         else:
             print("Unrecognized Response. Going Back...")
             return
@@ -253,11 +260,6 @@ def load_network():
             break
         except FileNotFoundError:
             print("File", load_file, "Not Found")
-
-
-""" ++++++++++++++++----------------++++++++++++++++++ """
-""" +++++++++++++++|HELPER FUNCTIONS|+++++++++++++++++ """
-""" ++++++++++++++++----------------++++++++++++++++++ """
 
 
 if __name__ == "__main__":

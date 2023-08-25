@@ -46,8 +46,6 @@ class Router:
         for addr in self.routing_table:
             if ip_to_bin(addr) in ip_to_bin(dest_ip) and len(ip_to_bin(addr)) > len(ip_to_bin(largest_subst)):
                 largest_subst = addr
-        if largest_subst == "0.0.0.0/0":
-            return None
         return self.routing_table[largest_subst]
         "MAKE SURE THAT THIS CONCEPT ACTUALLY WORKS"
         "I think it does, if anythings wrong im gonna find it in test"
@@ -162,15 +160,16 @@ class Router:
         networks = routing_info.split(" ")
         aggregate = address_aggregation(networks)
         self.add_route(aggregate, router_source)
-        "WRITE ADDRESS AGGREGATION HELPER"
+
 
     def update_neighbors(self):
         information = "DHCP_UPDATE: "
         for dir_conn_net in self.routing_table:
             information += dir_conn_net
         for network in self.routing_table:
-            dhcp_update = self.generate_udp_packet(self.routing_table[network], information)
-            self.forward_packet(dhcp_update)
+            if self.routing_table[network] is not None:
+                dhcp_update = self.generate_udp_packet(self.routing_table[network], information)
+                self.forward_packet(dhcp_update)
 
 """ +++++++++++++++++++----++++++++++++++++++++++ """
 """ ++++++++++++++++++|HOST|+++++++++++++++++++++ """
@@ -331,9 +330,8 @@ class Switch:
 
 def ip_to_bin(ip_address):
     try:
-        idx = ip_address.index('/')
-        mask = int(ip_address[idx:])
-        ip_address = ip_address[:idx]
+        ip_address, mask = ip_address.split('/')
+        mask = int(mask)
     except ValueError:
         mask = 32
      
@@ -341,8 +339,7 @@ def ip_to_bin(ip_address):
     for octet in ip_address.split('.'):
         binary_octet = format(int(octet), "08b")
         binary_addr += binary_octet
-
-    mask += len(binary_addr)
+        mask += 1
     return binary_addr[:mask]
 
 def address_aggregation(networks):

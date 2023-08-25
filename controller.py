@@ -1,5 +1,5 @@
 # Peter Demachkie
-# bridge.py
+# controller.py
 # www.github.com/PeterDemachkie/NetworkEmulator
 # peterdemachkie101@gmail.com
 
@@ -45,6 +45,8 @@ class Network:
         network = ipaddress.IPv4Network(network_address, strict=False)
         all_addresses = [str(ip) for ip in network.hosts()]
         taken_addresses = []
+        if network_address not in self.networks.keys():
+            return all_addresses.pop(0)
         for obj in self.networks[network_address][2]:
             if self.is_host(obj.get_name()):
                 taken_addresses.append(obj.get_ip_address())
@@ -57,7 +59,7 @@ class Network:
             return False
 
     def add_network(self, network_address, router_object):
-        self.networks[network_address] = [router_object, None, 0]
+        self.networks[network_address] = [router_object, None, []]
 
     def remove_network(self, network_address):
         del self.networks[network_address]
@@ -66,6 +68,7 @@ class Network:
         ret_str = "Network Topology:\n"
         for network_address in self.networks.keys():
             ret_str += self.view_subnet(network_address)
+        ret_str += "\n\n"
         return ret_str
         
     def view_subnet(self, network_address):
@@ -136,7 +139,7 @@ class Network:
                 router.add_route(network_address, self.networks[network_address][0])
         else:
             self.add_network(network_address, router)
-            router.add_network(self.get_available_address(network_address),)
+            router.add_network(self.get_available_address(network_address), network_address)
         router.update_neighbors()
             
             #WORK ON
@@ -145,9 +148,18 @@ class Network:
         # Check if there is another router on the subnet and make it the new gateway
             # (it might already be the gateway but its fine)
             # Need to set every hosts defaul gateway to the new router
-            # I should do that with packets but whatever idc
-        # If there isnt another router, nuke the whole network EXCEPT this router
+            # Send a DHCP update with an empty routing table
+        # If there isnt another router
+            # If our router has no other networks:
+                # remove the router
+            # else:
+                # del that network
         new_gateway = None
+        router = None
+        for obj, name in self.routers.items():
+            if name == router_name:
+                router = obj
+                break
         for device in self.networks[network_address]:
             if self.is_router(device) and device.get_name() != router_name:
                 new_gateway = device
@@ -156,27 +168,29 @@ class Network:
             for device in self.networks[network_address]:
                 if self.is_host(device):
                     device.set_gateway_router(new_gateway)
+                    router.update_neighbors()
+
         else:
-            if self.networks[network_address][1] is not None:
-                self.remove_switch(self.networks[network_address][1].get_name())
-            else:
-                for device in self.networks[network_address]:
-                    if self.is_host(device):
-                        self.remove_host(device.get_name())
-        del self.networks[network_address]
+            if len(router.get_networks) == 1:
+                pass
 
         #WORK ON:
         # NEED TO UPDATE 
 
-    def remove_router(self, router):
+    def remove_router(self, router_name):
         # Call remove_router_network on each of the router's networks
         # Then Remove the router itself
         # Update Neighbors...
+        router = None
+        for obj, name in self.routers.items():
+            if name == router_name:
+                router = obj
         for network in router.get_networks():
             self.remove_router_network(network)
+
         
-    def new_host(self, name, network_address):
-        host = Host(name, mac_gen(), self)
+    def new_host(self, host_name, network_address):
+        host = Host(host_name, mac_gen(), self)
         host.set_ip_address(self.get_available_address(network_address))
         gateway = self.networks[network_address][0]
         host.set_gateway_router(gateway)
@@ -185,10 +199,10 @@ class Network:
         else:
             host.add_route(network_address, gateway)
         self.networks[network_address][2].append(host)
-        self.hosts[host] = (name, host.get_ip_address)
+        self.hosts[host] = (host_name, host.get_ip_address)
         # WORK ON
 
-    def remove_host(self, name):
+    def remove_host(self, host_name):
         #Host must be removed from gateway router routes
         #Removed from switch table if applicable
         #network device count removed
@@ -196,20 +210,20 @@ class Network:
         #host removed from self.hosts
         host_network = None
         for network, attributes in self.networks.items():
-            if name in attributes[2]:
+            if host_name in attributes[2]:
                 host_network = network
 
         router = self.networks[network][0]
         for host in self.hosts:
-            if self.hosts[host] == name:
+            if self.hosts[host] == host_name:
                 del self.hosts[host]
                 router.remove_route(host.get_ip_address())
         #WORK ON
 
-    def new_switch(self, name, network_address):
+    def new_switch(self, switch_name, network_address):
         mac_address = mac_gen()
         router = self.networks[network_address][0]
-        switch = Switch(name, mac_address)
+        switch = Switch(switch_name, mac_address)
         router.add_route(network_address, switch)
         if len(self.networks[network_address][2]) > 1:
             # Its safe here to assume that no switch is on the sub network
@@ -218,10 +232,10 @@ class Network:
                     device.add_route(network_address, switch)
         self.networks[network_address][1] = switch
 
-    def remove_switch(self, name):
+    def remove_switch(self, switch_name):
         switch = None
-        for switch_obj, switch_name in self.switches.items():
-            if switch_name == name:
+        for switch_obj, obj_name in self.switches.items():
+            if obj_name == switch_name:
                 switch = switch_obj
         network_address = None
         for network, attributes in self.networks.items():
@@ -230,8 +244,16 @@ class Network:
         for device in self.networks[network_address][2]:
             if self.is_host(device):
                 self.remove_host(device)
+            if self.is_router(device):
+                pass
+                # Get router object
+                # If router is not the gateway...
+                    # Remove this network from its routing table
+                # Else:
+                    # pass
         # Remove Switch Itelf...
-        # Need To Make Decisions regarding non-gateway routers on network
+        # This should do almost the same thing as remove_router_network
+        # Except for that we keep the network on the gateway router
         #WORK ON
         "NOT FINISHED!!!"
 
